@@ -2,7 +2,7 @@
   
 namespace App\Enums;
  
-enum ProductStatusEnum:string {
+enum OrderStatusEnum:string {
     case Pending = 'pending';
     case Selected = 'selected';
     case Picked = 'picked';
