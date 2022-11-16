@@ -44,8 +44,10 @@ class OrderController extends RootController
         $role_id = auth('sanctum')->user()->role_id;
 
         if ($role_id == 1) {
+            // TODO
             $order = Order::where('user_id', auth('sanctum')
                     ->user()->id)
+                ->leftJoin('users', 'users.id', '=', 'orders.delivery_user_id')
                 ->get();
         } else {
             return $this->apiResponse([], "only customer can view status", 403);
@@ -74,7 +76,7 @@ class OrderController extends RootController
     public function updateStatus(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'order_id' => 'required',
+            'id' => 'required',
             'status' => 'required',
         ]);
 
@@ -83,9 +85,11 @@ class OrderController extends RootController
         if ($validator->fails()) {
             return $this->apiResponse([], $validator->errors(), 422);
         }
+        
         if ($role_id == 2) {
-            $order = Order::where('id', $request->order_id)->first();
+            $order = Order::where('id', $request->id)->first();
             $order->status = $request->status;
+            $order->delivery_user_id = auth('sanctum')->user()->id;
             if ($order->save()) {
                 $response = array(
                     "order" => $order,
