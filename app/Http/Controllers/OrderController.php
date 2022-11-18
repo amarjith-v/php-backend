@@ -19,6 +19,7 @@ class OrderController extends RootController
         $validator = Validator::make($request->all(), [
             'pickup_address' => 'required',
             'delivery_address' => 'required',
+            'item_name' => 'required',
         ]);
 
         $input['user_id'] = auth('sanctum')->user()->id;
@@ -64,11 +65,15 @@ class OrderController extends RootController
 
         if ($role_id == 2) {
             $order = Order::where('status', 'pending')->with('User')->get();
+            $past_order = Order::where('delivery_user_id', auth('sanctum')->user()->id)->with('User')->get();
+            // foreach ($past_order as $key => $value) {
+            //     array_push($order,$value);
+            // }
         } else {
             return $this->apiResponse([], "only delivery user can view orders", 403);
         }
         $response = array(
-            "order" => $order,
+            "order" => array_merge((array)json_decode($order), (array) json_decode($past_order)),
         );
         return $this->apiResponse($response, "Order fetched successfully", 200);
     }
